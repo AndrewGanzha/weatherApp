@@ -22,6 +22,8 @@ func GetWeather(geo geo.GeoData, format int) string {
 
 	resp, err := http.Get(baseUrl.String())
 
+	defer resp.Body.Close()
+
 	if err != nil {
 		fmt.Println(err.Error())
 		return ""
