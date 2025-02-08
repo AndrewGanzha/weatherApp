@@ -14,15 +14,18 @@ type GeoData struct {
 }
 
 type CityPopulationResponse struct {
-	error bool `json:"error"`
+	Error bool `json:"error"`
 }
+
+var ErrNoCity = errors.New("NOCITY")
+var ErrNo200 = errors.New("NO200")
 
 func GetMyLocation(city string) (*GeoData, error) {
 	if city != "" {
 		isCity := CheckCity(city)
 
 		if !isCity {
-			return nil, errors.New(fmt.Sprintf("city %s is not exist", city))
+			return nil, ErrNoCity
 		}
 
 		return &GeoData{
@@ -37,7 +40,7 @@ func GetMyLocation(city string) (*GeoData, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(resp.Status)
+		return nil, ErrNo200
 	}
 	body, err := io.ReadAll(resp.Body)
 
@@ -58,7 +61,6 @@ func CheckCity(city string) bool {
 	postBody, _ := json.Marshal(map[string]string{"city": city})
 
 	resp, err := http.Post("https://countriesnow.space/api/v0.1/countries/population/cities", "application/json", bytes.NewBuffer(postBody))
-
 	if err != nil {
 		fmt.Println(err.Error())
 		return false
@@ -70,5 +72,5 @@ func CheckCity(city string) bool {
 
 	json.Unmarshal(body, &population)
 
-	return !population.error
+	return !population.Error
 }
